@@ -201,4 +201,15 @@ const { code } = Astro.props;
     #runCode:active {
         color: rgba(0, 128, 0, 0.8);
     }
+
+    @media (max-width: 1068px) {
+        .layout {
+            grid-template-columns: auto;
+            grid-template-areas:
+                "toolbar"
+                "editor"
+                "output-title"
+                "console";
+        }
+    }
 </style>
