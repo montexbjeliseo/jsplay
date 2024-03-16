@@ -1,0 +1,17 @@
+---
+const { title, bgcolor, fgcolor } = Astro.props;
+---
+
+<div class="quicknote" style={{ backgroundColor: bgcolor, color: fgcolor }}>
+    <strong>{title && title + ':'}</strong>
+    <slot />
+</div>
+
+<style>
+    .quicknote {
+        padding: 1rem;
+        border: 1px solid #ccc;
+        border-radius: 12px;
+        margin-bottom: 1rem;
+    }
+</style>

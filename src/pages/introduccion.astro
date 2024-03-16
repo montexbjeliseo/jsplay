@@ -1,6 +1,7 @@
 ---
-import Editor from '@/components/Editor.astro';
-import Layout from '@/layouts/Layout.astro';
+import Layout from "@/layouts/Layout.astro";
+import Editor from "@/components/Editor.astro";
+import QuickNote from "@/components/QuickNote.astro";
 ---
 
 <Layout
@@ -10,20 +11,94 @@ import Layout from '@/layouts/Layout.astro';
     <main>
         <h1>Introducción: ¿Qué es JavaScript?</h1>
         <p>
-            JavaScript es un lenguaje de programación o de scripting (secuencia de comandos) de alto nivel,
-            multiparadigma e interpretado.
+            JavaScript es un lenguaje de programación o de scripting (secuencia
+            de comandos) de alto nivel, multiparadigma e interpretado.
         </p>
 
         <p>
-            Es utilizado principalmente para dotar de dinamismo a un sitio web aunque también es ampliamente utilizado en otros campos como juegos, aplicaciones móviles y de escritorio.
+            Es utilizado principalmente para dotar de dinamismo a un sitio web
+            aunque también es ampliamente utilizado en otros campos como juegos,
+            aplicaciones móviles y de escritorio.
         </p>
 
-        <p>Digamos hola mundo</p>
+        <p>Digamos hola mundo:</p>
+
+        <QuickNote title="Nota" bgcolor="#f0f0f0">
+            Presiona en el icono de "play" para ejecutar el código.
+        </QuickNote>
+
+        <div id="goal1" class="hidden">
+            <QuickNote title="Siguiente objetivo" bgcolor="#A6FF96">
+                Ahora modifica el código para que muestre 'Hola JavaScript'.
+            </QuickNote>
+        </div>
+
+        <div id="goal2" class="hidden">
+            <QuickNote title="Objetivos concluidos" bgcolor="#6499E9">
+                Perfecto, ahora sabes como imprimir en la consola con JavaScript.
+            </QuickNote>
+        </div>
 
         <Editor code={`console.log("Hola mundo");`} />
-    </main></Layout
->
+
+        <div id="goals-completed" class="hidden">
+            <QuickNote bgcolor="#BEFFF7">
+                Puedes seguir haciendo pruebas o pasar a la siguiente sección.
+            </QuickNote>
+        </div>
+
+    </main>
+</Layout>
+
+<script>
+    const goals = {
+        helloWorld: false,
+        helloJavascript: false,
+    };
+
+    const outputElement = document.querySelector(".console");
+
+    const observer = new MutationObserver((mutations) => {
+        if (outputElement?.textContent?.trim() === "Hola mundo" && !goals.helloWorld) {
+            goals.helloWorld = true;
+
+            const nextGoal = document.querySelector("#goal1");
+            if (nextGoal) {
+                nextGoal.classList.toggle("hidden");
+            }
+        }
+
+        if (outputElement?.textContent?.trim() === "Hola JavaScript" && !goals.helloJavascript) {
+            goals.helloJavascript = true;
+
+            const nextGoal = document.querySelector("#goal2");
+            if (nextGoal) {
+                nextGoal.classList.toggle("hidden");
+            }
+
+            const lastGoal = document.querySelector("#goal1");
+            if (lastGoal) {
+                lastGoal.classList.toggle("hidden");
+            }
+        }
+
+        if (goals.helloWorld && goals.helloJavascript) {
+            const nextGoal = document.querySelector("#goals-completed");
+            if (nextGoal) {
+                nextGoal.classList.toggle("hidden");
+            }
+        }
+    });
+
+    if (outputElement) {
+        observer.observe(outputElement, { childList: true });
+    } else {
+        console.log("outputElement not found");
+    }
+</script>
 
 <style>
-
+    .hidden {
+        display: none;
+    }
 </style>
