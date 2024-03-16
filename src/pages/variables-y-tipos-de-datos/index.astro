@@ -1,0 +1,143 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import Editor from "@/components/Editor.astro";
+import QuickNote from "@/components/QuickNote.astro";
+import Collapsible from "@/components/Collapsible.astro";
+---
+
+<Layout
+    title="Variables y tipos de datos"
+    description="Un playground de JavaScript"
+>
+    <main>
+        <h1>Variables y tipos de datos</h1>
+
+        <h2>Variables</h2>
+        <p>
+            Una variable es un contenedor de información. Cada variable tiene un
+            nombre y un valor.
+        </p>
+
+        <p>
+            Nos sirvirá para almacenar valores que utilizaremos posteriormente.
+        </p>
+
+        <QuickNote title="Nota" bgcolor="#f0f0f0">
+            Presiona en el icono de "play" para ejecutar el código.
+        </QuickNote>
+
+        <div id="goal1" class="hidden">
+            <QuickNote title="Siguiente objetivo" bgcolor="#A6FF96">
+                <p>
+                    Hemos definido una variable 'nombre' con el valor 'Pedro'.
+                </p>
+                <p>
+                    Ahora es momento de crear tu propia variable, define otra
+                    variable 'apellido' con el valor 'Torres' y muestra su valor
+                    en la consola.
+                </p>
+                <Collapsible title="Dame una pista">
+                    <ul>
+                        <li>
+                            Para definir una variable usamos la palabra 'let'
+                            seguido del nombre de la variable
+                        </li>
+                        <li>
+                            Para asignar el valor utilizamos el operador '='
+                            (asignación) seguido del valor.
+                        </li>
+                        <li>
+                            Para leer el valor simplemente escribimos el nombre
+                            de la variable
+                        </li>
+                    </ul>
+                </Collapsible>
+            </QuickNote>
+        </div>
+
+        <div id="goal2" class="hidden">
+            <QuickNote title="Objetivos concluidos" bgcolor="#6499E9">
+                Perfecto, ahora sabes como se crea una variable.
+                Siguiente: <a href="/variables-y-tipos-de-datos/modificar-variables">modificar los valores</a>
+            </QuickNote>
+        </div>
+
+        <Editor code=`let nombre = "Pedro";
+console.log('Nombre:', nombre);` />
+    </main>
+</Layout>
+
+<script>
+    const goals = {
+        readVariable: false,
+        createApellidoVariableAndRead: false
+    }
+
+    const outputElement = document.querySelector(".console");
+
+    const observer = new MutationObserver((mutations) => {
+        const cmContent = document.querySelector(".cm-content");
+
+        if (!cmContent) {
+            console.error("No se encontro el elemento 'cmContent'");
+            return;
+        }
+
+        if (
+            outputElement?.textContent?.trim() === "Nombre: Pedro" &&
+            !goals.readVariable
+        ) {
+            const nextGoal = document.querySelector("#goal1");
+            if (nextGoal) {
+                goals.readVariable = true;
+                nextGoal.classList.toggle("hidden");
+            }
+        }
+
+        if (
+            outputElement?.textContent?.trim().includes("Apellido: Torres") &&
+            cmContent.textContent?.includes("let apellido") &&
+            (cmContent.textContent
+                ?.split(" ")
+                .join("")
+                .includes('letapellido="Torres"') ||
+                cmContent.textContent
+                    ?.split(" ")
+                    .join("")
+                    .includes("letapellido='Torres'")) &&
+            (cmContent.textContent
+                ?.split(" ")
+                .join("")
+                .includes("console.log('Apellido:',apellido)") ||
+                cmContent.textContent
+                    ?.split(" ")
+                    .join("")
+                    .includes('console.log("Apellido:",apellido)')) &&
+            !goals.createApellidoVariableAndRead &&
+            goals.readVariable
+        ) {
+            const nextGoal = document.querySelector("#goal2");
+            if (nextGoal) {
+                goals.createApellidoVariableAndRead = true;
+                nextGoal.classList.toggle("hidden");
+            }
+        }
+    });
+
+    if (outputElement) {
+        observer.observe(outputElement, { childList: true, subtree: true });
+    } else {
+        console.error("No se encontro el elemento 'outputElement'");
+    }
+</script>
+
+<style>
+    .hidden {
+        display: none;
+    }
+
+    mark {
+        background-color: #f0f0f0;
+        padding: 0 2px;
+    }
+</style>
