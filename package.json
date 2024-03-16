@@ -1,0 +1,20 @@
+{
+  "name": "jsplayground",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro check && astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/check": "^0.5.9",
+    "@codemirror/lang-javascript": "github:codemirror/lang-javascript",
+    "@codemirror/state": "github:codemirror/state",
+    "astro": "^4.5.3",
+    "codemirror": "^6.0.1",
+    "typescript": "^5.4.2"
+  }
+}

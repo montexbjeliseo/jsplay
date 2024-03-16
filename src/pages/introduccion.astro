@@ -1,0 +1,29 @@
+---
+import Editor from '@/components/Editor.astro';
+import Layout from '@/layouts/Layout.astro';
+---
+
+<Layout
+    title="Introducción: ¿Qué es JavaScript?"
+    description="Un playground de JavaScript"
+>
+    <main>
+        <h1>Introducción: ¿Qué es JavaScript?</h1>
+        <p>
+            JavaScript es un lenguaje de programación o de scripting (secuencia de comandos) de alto nivel,
+            multiparadigma e interpretado.
+        </p>
+
+        <p>
+            Es utilizado principalmente para dotar de dinamismo a un sitio web aunque también es ampliamente utilizado en otros campos como juegos, aplicaciones móviles y de escritorio.
+        </p>
+
+        <p>Digamos hola mundo</p>
+
+        <Editor code={`console.log("Hola mundo");`} />
+    </main></Layout
+>
+
+<style>
+
+</style>

@@ -1,0 +1,204 @@
+---
+import PlayIcon from "@/icons/PlayIcon.astro";
+
+import "@/styles/editor.css";
+
+const { code } = Astro.props;
+
+---
+
+<div id="default-code">
+    {code??''}
+</div>
+
+<div class="layout">
+    <div><button id="runCode"><PlayIcon /></button></div>
+    <div>Salida</div>
+    <div id="editor-container"></div>
+    <div class="console"></div>
+</div>
+
+<script>
+
+    const defaultCodeElement = document.querySelector("#default-code");
+    
+    let defaultCode = ``;
+
+    if (defaultCodeElement) {
+        defaultCode = defaultCodeElement.innerHTML.trim();
+
+        defaultCodeElement.remove();
+    }
+
+    const container = document.getElementById("editor-container");
+
+    const button = document.querySelector("#runCode");
+
+    button?.addEventListener("click", runCode);
+
+    import { basicSetup, EditorView } from "codemirror";
+    import { javascript } from "@codemirror/lang-javascript";
+
+    let view = new EditorView({
+        doc: defaultCode,
+        extensions: [basicSetup, javascript()],
+        parent: container || document.body,
+    });
+
+    function runCode() {
+        const jsCode = view.state.doc.toString();
+
+        const codeRunner = document.createElement("iframe");
+
+        codeRunner.setAttribute("id", "runner");
+
+        const evaluatedCode = `
+            <h1>Hola mundo</h1>
+            <script>
+
+                function stringify(array){
+                    let strings = \'[\';
+
+                    for (let i = 0; i < array.length; i++) {
+                        const element = array[i];
+                        if(Array.isArray(element)) {
+                            strings += stringify(element) + \', \';
+                        } else {
+                            if(typeof element === 'string') {
+                                strings += \'"\' + element + \'"\';
+                            } else {
+                                strings += element;
+                            }
+                        }
+
+                        if(i < array.length - 1) {
+                            strings += \', \';
+                        }
+                    }
+
+                    strings += \']\';
+                    return strings;
+                }
+
+                var codeResultKeeper = [];
+                console.log = function(){
+                    let inline = '';
+                    for (let i = 0; i < arguments.length; i++) {
+                        const message = arguments[i];
+                        if(Array.isArray(message)) {
+                            //codeResultKeeper.push(\'[\' + (typeof message === 'string' ? message.map(m => '&quot;' + m + '&quot;').join(\', \') : message.join(\', \')) + \']\');
+                            codeResultKeeper.push(stringify(message));
+                        } else {
+                            inline += \' \' + message;
+                        }
+                    }
+
+                    codeResultKeeper.push(inline);
+                    
+                }
+                const evaluateCode = (code) => {
+                    try {
+                        eval(code);
+                    } catch (error) {
+                        console.log(error);
+                    } 
+                    return codeResultKeeper;
+                };
+
+                window.onload = () => {
+                    window.parent.postMessage(
+                    {
+                        type: \'codeResult\', 
+                        data: evaluateCode(\`${jsCode}\`)
+                    }, '*');
+                }
+            <\/script>
+        `;
+
+        codeRunner.srcdoc = evaluatedCode;
+        codeRunner.contentDocument?.open();
+        codeRunner.contentDocument?.write(evaluatedCode);
+        codeRunner.contentDocument?.close();
+
+        codeRunner.style.display = "none";
+        document.body.append(codeRunner);
+    }
+
+    window.addEventListener("message", function (event) {
+        if (event.data && event.data.type === "codeResult") {
+            const outputDiv = document.querySelector(".console");
+
+            if (outputDiv) {
+                const lines = event.data.data
+                    .map((line: string) => `<div>${line}</div>`)
+                    .join("");
+
+                outputDiv.innerHTML = lines;
+            } else {
+                console.log(event.data.data);
+            }
+        }
+
+        // Cleanup
+        document.getElementById("runner")?.remove();
+    });
+</script>
+
+<style>
+
+    #default-code {
+        display: none;
+    }
+
+    .playground-editor {
+        width: 100%;
+        height: 100%;
+    }
+    #editor-container {
+        width: 100%;
+        height: 350px;
+        grid-area: editor;
+    }
+
+    .layout {
+        display: grid;
+        gap: 10px;
+        grid-template-columns: 1fr 1fr;
+        grid-template-areas:
+            "toolbar output-title"
+            "editor console";
+    }
+
+    .console {
+        grid-area: console;
+        border: 1px solid #ddd;
+        /* padding: 15px; */
+        border-radius: 5px;
+        height: 350px;
+        overflow-y: auto;
+    }
+
+    .toolbar {
+        grid-area: toolbar;
+    }
+
+    .output-title {
+        grid-area: output-title;
+    }
+
+    #runCode {
+        border: 0;
+        background: none;
+        font-size: 24px;
+        color: green;
+        outline: 0;
+    }
+
+    #runCode:hover {
+        cursor: pointer;
+    }
+
+    #runCode:active {
+        color: rgba(0, 128, 0, 0.8);
+    }
+</style>
