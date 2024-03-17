@@ -163,7 +163,7 @@ const { code } = Astro.props;
     .layout {
         display: grid;
         gap: 10px;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 50% 50%;
         grid-template-areas:
             "toolbar output-title"
             "editor console";
@@ -204,7 +204,7 @@ const { code } = Astro.props;
 
     @media (max-width: 1068px) {
         .layout {
-            grid-template-columns: auto;
+            grid-template-columns: minmax(0, 1fr);
             grid-template-areas:
                 "toolbar"
                 "editor"

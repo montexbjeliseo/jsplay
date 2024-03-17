@@ -2,6 +2,7 @@
 import Layout from "@/layouts/Layout.astro";
 import Editor from "@/components/Editor.astro";
 import QuickNote from "@/components/QuickNote.astro";
+
 import Collapsible from "@/components/Collapsible.astro";
 ---
 
@@ -26,39 +27,14 @@ import Collapsible from "@/components/Collapsible.astro";
             Presiona en el icono de "play" para ejecutar el código.
         </QuickNote>
 
-        <div id="goal1" class="hidden">
+        <div id="goal">
             <QuickNote title="Siguiente objetivo" bgcolor="#A6FF96">
-                <p>
-                    Hemos definido una variable 'nombre' con el valor 'Pedro'.
-                </p>
-                <p>
-                    Ahora es momento de crear tu propia variable, define otra
-                    variable 'apellido' con el valor 'Torres' y muestra su valor
-                    en la consola.
-                </p>
-                <Collapsible title="Dame una pista">
-                    <ul>
-                        <li>
-                            Para definir una variable usamos la palabra 'let'
-                            seguido del nombre de la variable
-                        </li>
-                        <li>
-                            Para asignar el valor utilizamos el operador '='
-                            (asignación) seguido del valor.
-                        </li>
-                        <li>
-                            Para leer el valor simplemente escribimos el nombre
-                            de la variable
-                        </li>
-                    </ul>
-                </Collapsible>
-            </QuickNote>
-        </div>
-
-        <div id="goal2" class="hidden">
-            <QuickNote title="Objetivos concluidos" bgcolor="#6499E9">
-                Perfecto, ahora sabes como se crea una variable.
-                Siguiente: <a href="/variables-y-tipos-de-datos/modificar-variables">modificar los valores</a>
+                <div id="goal-description"></div>
+                <div id="clues-box">
+                    <Collapsible title="Dame una pista">
+                        <div id="goal-clues"></div>
+                    </Collapsible>
+                </div>
             </QuickNote>
         </div>
 
@@ -68,14 +44,100 @@ console.log('Nombre:', nombre);` />
 </Layout>
 
 <script>
-    const goals = {
-        readVariable: false,
-        createApellidoVariableAndRead: false
-    }
+    
+    import {
+        //@ts-ignore
+        consoleIs,
+        //@ts-ignore
+        definesVariable,
+        //@ts-ignore
+        variablePrinted,
+    } from "@/scripts/goal-checker.mjs";
+
+    const goals = [
+        {
+            name: "Definir una variable",
+            description:
+                "Observa el siguiente ejemplo con atención y luego presiona en el icono de 'play' para ejecutar el código.",
+            completed: false,
+            successMessage:
+                "Hemos definido una variable 'nombre' con el valor 'Pedro' y esto lo imprimos por consola.",
+            test: () => consoleIs("Nombre: Pedro"),
+        },
+        {
+            name: "Crear una nueva variable",
+            description:
+                "Ahora te toca a vos, define una variable 'apellido' con el valor 'Torres' y muestra su valor en la consola.",
+            completed: false,
+            successMessage:
+                "Genial! Ahora ya sabes como crear variables y como utilizar su contenido.",
+            test: () => {
+                const expectedVariable = {
+                    type: "let",
+                    name: "apellido",
+                    value: "Torres",
+                };
+                return (
+                    definesVariable(expectedVariable) &&
+                    variablePrinted(expectedVariable)
+                );
+            },
+            clues: [
+                "Para definir una variable usamos la palabra 'let' seguido del nombre de la variable",
+                "Para asignar el valor utilizamos el operador '=' (asignación) seguido del valor",
+                "Para leer el valor simplemente escribimos el nombre de la variable",
+                "Ten en cuenta las mayúsculas y minúsculas",
+                "Usa el formato del ejemplo",
+            ],
+        },
+    ];
+
+    let currentGoal = 0;
 
     const outputElement = document.querySelector(".console");
 
-    const observer = new MutationObserver((mutations) => {
+    const setGoal = (index: number) => {
+        currentGoal = index;
+
+        const goalDescription = document.querySelector("#goal-description");
+
+        if (goalDescription) {
+            goalDescription.textContent = goals[currentGoal].description;
+        }
+
+        const goalClues = document.querySelector("#goal-clues");
+
+        if (goalClues) {
+            goalClues.innerHTML = "";
+
+            if (goals[currentGoal].clues) {
+                if (Array.isArray(goals[currentGoal].clues)) {
+                    // @ts-ignore
+                    goals[currentGoal].clues.forEach((clue) => {
+                        const li = document.createElement("li");
+                        li.textContent = clue;
+                        goalClues.appendChild(li);
+                    });
+
+                    const cluesBox = document.querySelector("#clues-box");
+                    if (cluesBox && cluesBox.classList.contains("hidden")) {
+                        cluesBox.classList.remove("hidden");
+                    }
+                }
+            } else {
+                const cluesBox = document.querySelector("#clues-box");
+                if (cluesBox && !cluesBox.classList.contains("hidden")) {
+                    cluesBox.classList.add("hidden");
+                }
+            }
+        }
+    };
+
+    const finishLesson = () => {
+        console.log("Objetivos completados");
+    };
+
+    const observer = new MutationObserver(() => {
         const cmContent = document.querySelector(".cm-content");
 
         if (!cmContent) {
@@ -83,46 +145,18 @@ console.log('Nombre:', nombre);` />
             return;
         }
 
-        if (
-            outputElement?.textContent?.trim() === "Nombre: Pedro" &&
-            !goals.readVariable
-        ) {
-            const nextGoal = document.querySelector("#goal1");
-            if (nextGoal) {
-                goals.readVariable = true;
-                nextGoal.classList.toggle("hidden");
-            }
-        }
-
-        if (
-            outputElement?.textContent?.trim().includes("Apellido: Torres") &&
-            cmContent.textContent?.includes("let apellido") &&
-            (cmContent.textContent
-                ?.split(" ")
-                .join("")
-                .includes('letapellido="Torres"') ||
-                cmContent.textContent
-                    ?.split(" ")
-                    .join("")
-                    .includes("letapellido='Torres'")) &&
-            (cmContent.textContent
-                ?.split(" ")
-                .join("")
-                .includes("console.log('Apellido:',apellido)") ||
-                cmContent.textContent
-                    ?.split(" ")
-                    .join("")
-                    .includes('console.log("Apellido:",apellido)')) &&
-            !goals.createApellidoVariableAndRead &&
-            goals.readVariable
-        ) {
-            const nextGoal = document.querySelector("#goal2");
-            if (nextGoal) {
-                goals.createApellidoVariableAndRead = true;
-                nextGoal.classList.toggle("hidden");
+        if (goals[currentGoal].test()) {
+            goals[currentGoal].completed = true;
+            if (currentGoal < goals.length - 1) {
+                setGoal(currentGoal + 1);
+            } else {
+                finishLesson();
             }
         }
     });
+
+    // First goal
+    setGoal(0);
 
     if (outputElement) {
         observer.observe(outputElement, { childList: true, subtree: true });

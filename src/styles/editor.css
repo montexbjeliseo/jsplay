@@ -1,4 +1,7 @@
 .cm-editor {
     height: 350px;
     width: 100%;
+    overflow-y: auto;
+    overflow-x: auto;
+    box-sizing: border-box;
 }
