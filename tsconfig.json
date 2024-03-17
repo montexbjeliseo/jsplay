@@ -1,7 +1,7 @@
 {
   "extends": "astro/tsconfigs/strict",
   "compilerOptions": {
-    "baseUrl": "D:/dev/jsplay/jsplayground",
+    "baseUrl": ".",
     "paths": {
       "@/*": [
         "src/*"
