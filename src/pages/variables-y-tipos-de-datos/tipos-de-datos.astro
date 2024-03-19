@@ -14,9 +14,16 @@ import Collapsible from "@/components/Collapsible.astro";
         <h1>Variables y tipos de datos</h1>
 
         <h2>Tipos de datos</h2>
-        <p>Ya sabes que son las variables, es hora de adentrarnos en los tipos de datos.</p>
+        <p>
+            Ya sabes que son las variables, es hora de adentrarnos en los tipos
+            de datos.
+        </p>
 
-        <p>Los tipos de datos proporcionan una forma de clasificar y organizar la información lo que permite procesarlos y manipularlos de manera efectiva.</p>
+        <p>
+            Los tipos de datos proporcionan una forma de clasificar y organizar
+            la información lo que permite procesarlos y manipularlos de manera
+            efectiva.
+        </p>
 
         <p>Los tipos de datos más comunes en JavaScript son:</p>
 
@@ -30,9 +37,15 @@ import Collapsible from "@/components/Collapsible.astro";
             <li>arrays</li>
         </ul>
 
-        <p>Hasta el momento veníamos utilizando los strings o cadena de caracteres. Ej: "Pedro", "Juan"</p>
+        <p>
+            Hasta el momento veníamos utilizando los strings o cadena de
+            caracteres. Ej: "Pedro", "Juan"
+        </p>
 
-        <p>Vamos a ver como podemos averiguar el tipo de dato que contiene una variable.</p>
+        <p>
+            Vamos a ver como podemos averiguar el tipo de dato que contiene una
+            variable.
+        </p>
 
         <QuickNote title="Nota" bgcolor="#f0f0f0">
             Presiona en el icono de "play" para ejecutar el código.
@@ -50,14 +63,22 @@ import Collapsible from "@/components/Collapsible.astro";
         </div>
 
         <div id="success-message-box">
-            <QuickNote title="Objetivos concluidos" bgcolor="#6499E9">
+            <QuickNote title="Objetivo Alcanzado" bgcolor="#6499E9">
                 <div id="success-message"></div>
                 <button id="continue-btn">Continuar</button>
             </QuickNote>
         </div>
 
-        <Editor code=`let nombre = "Pedro";
-console.log("nombre es", typeof nombre);` />
+        <div id="finish-lesson">
+            <QuickNote title="Lección completada" bgcolor="green">
+                <div id="finish-message"></div>
+            </QuickNote>
+        </div>
+
+        <Editor
+            code=`let nombre = "Pedro";
+console.log("nombre es", typeof nombre);`
+        />
     </main>
 </Layout>
 
@@ -65,10 +86,10 @@ console.log("nombre es", typeof nombre);` />
     import {
         consoleIs,
         definesVariable,
-        variablePrinted,
-        definesAndReassignsVariable,
-        printsTypeof
+        printsTypeof,
     } from "@/scripts/goal-checker.mjs";
+
+    import { a, p } from "@/scripts/builder.mjs";
 
     const goals = [
         {
@@ -85,19 +106,15 @@ console.log("nombre es", typeof nombre);` />
             description:
                 "Ahora te toca a vos, define una variable 'edad' con el valor 25 (sin comillas) y muestra su tipo en la consola.",
             completed: false,
-            successMessage:
-                "Genial! Ahora sabemos que es de tipo number.",
+            successMessage: "Genial! Ahora sabemos que es de tipo number.",
             test: () => {
                 const expectedVariable = {
                     type: "let",
                     name: "edad",
                     value: 25,
                 };
-
-                console.log("edad es", typeof expectedVariable.value);
                 return (
                     definesVariable(expectedVariable) &&
-                    // variablePrinted(expectedVariable)
                     printsTypeof(expectedVariable)
                 );
             },
@@ -110,29 +127,20 @@ console.log("nombre es", typeof nombre);` />
             ],
         },
         {
-            name: "Modificar el valor de una variable",
-            description: `Modifica el valor de la variable 'nombre' para que sea 'Juan'.\n
-                Debajo del código existente, escribe nombre = 'Juan' y vuelve a mostrar el valor de la variable en la consola.`,
+            name: "Prueba otra vez, con un número decimal",
+            description: `Crea otra variable 'altura' con el valor 1.75 (sin comillas) y muestra su tipo en la consola.`,
             completed: false,
             successMessage:
-                "Genial! Ahora ya sabes como modificar el valor de una variable.",
+                "¡Muy bien! Hemos aprendido como mostrar el tipo de dato de una variable.",
             test: () => {
                 const expectedVariable = {
                     type: "let",
-                    name: "nombre",
-                    value: "\"Pedro\"",
+                    name: "altura",
+                    value: 1.75,
                 };
-
-                const newExpectedValue = "\"Juan\"";
                 return (
-                    definesAndReassignsVariable(
-                        expectedVariable,
-                        newExpectedValue,
-                    ) &&
-                    variablePrinted({
-                        ...expectedVariable,
-                        value: newExpectedValue,
-                    })
+                    definesVariable(expectedVariable) &&
+                    printsTypeof(expectedVariable)
                 );
             },
         },
@@ -192,10 +200,11 @@ console.log("nombre es", typeof nombre);` />
     };
 
     const finishLesson = () => {
-        const successMessage = document.querySelector("#success-message");
-        if (successMessage) {
-            successMessage.innerHTML =
-                "¡Felicidades! Has completado el tutorial.";
+        const finishLesson = document.querySelector("#finish-message");
+        if (finishLesson) {
+            finishLesson.innerHTML =
+                `${p("¡Felicidades! Has completado el tutorial.")}
+                ${a("Siguiente tutorial", "/variables-y-tipos-de-datos/operaciones")}`;
         }
     };
 
@@ -263,5 +272,9 @@ console.log("nombre es", typeof nombre);` />
     }
     .show {
         display: block !important;
+    }
+
+    #finish-lesson {
+        display: none;
     }
 </style>
