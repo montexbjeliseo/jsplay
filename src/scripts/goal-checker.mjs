@@ -8,10 +8,6 @@ export function consoleIs(codeFragment) {
     return outputElement?.textContent?.trim() === codeFragment;
 }
 
-export function consoleContains(codeFragment) {
-    return outputElement?.textContent?.trim().includes(codeFragment);
-}
-
 function getEditorContent() {
     const cmContent = document.querySelector(".cm-content");
 
@@ -22,32 +18,59 @@ function getEditorContent() {
     return cmContent;
 }
 
-// Requires lazy load cmContent
-export function editorContains(codeFragment) {
-    return getEditorContent().textContent?.includes(codeFragment);
-}
 
-export function editorContainsIgnoringSpaces(codeFragment){
-    return getEditorContent().textContent?.replace(/\s/g, '').includes(codeFragment.replace(/\s/g, ''));
-}
-
+/**
+ * Check if variable is defined
+ * @param {Object} description
+ * @param {string} description.type
+ * @param {string} description.name
+ * @param {string || number} description.value
+ * @return {boolean}
+ */
 export function definesVariable(description){
     const code = getEditorContent().textContent;
-    const regex = new RegExp(`${description.type}\\s+${description.name}\\s*=\\s*${description.value ? `['"]${description.value}['"]` : '\\w+'}`);
+    const regex = new RegExp(`${description.type}\\s+${description.name}\\s*=\\s*${description.value ? `${description.value}` : '\\w+'}`);
         return regex.test(code);
 }
 
+export function definesAndReassignsVariable(description, newValue) {
+    const code = getEditorContent().textContent;
+    const regex = new RegExp(`${description.name}\\s*=\\s*${newValue ? `${newValue}` : '\\w+'}`);
+    return regex.test(code) && definesVariable(description);
+}
+
 export function variablePrinted(description) {
+
+    console.log("vprint: ", description)
+
+    const output = outputElement.textContent;
+    const code = getEditorContent().textContent;
+    
+    const regexCode = new RegExp(`console\\.log\\(.*\\s*${description.name}\\s*\\)`);
+
+    const regexOutput = new RegExp(`.*\\s*${description.value}`);
+
+    return regexCode.test(code) && regexOutput.test(output);
+}
+
+export function printsTypeof(description) {
     const output = outputElement.textContent;
     const code = getEditorContent().textContent;
 
-    const variableName = description.name.charAt(0).toUpperCase() + description.name.slice(1);
+    console.log({
+        output,
+        code,
+        regexCode: new RegExp(`console\\.log\\(.*\\s*typeof\\s*${description.name}\\s*\\)`),
+        regexOutput: new RegExp(`.*\\s*${typeof description.value}`),
+        test: new RegExp(`console\\.log\\(.*\\s*typeof\\s*${description.name}\\s*\\)`).test(code) && new RegExp(`.*\\s*${typeof description.value}`).test(output),
+        type: typeof description.value,
+        name: description.name
+    })
+    
+    const regexCode = new RegExp(`console\\.log\\(.*\\s*typeof\\s*${description.name}\\s*\\)`);
 
-    const regexCode = new RegExp(`console\\.log\\(\\s*("|')${variableName}\\s*:\\s*\\1\\s*,\\s*${description.name}\\s*\\)`);
-
-    const regexOutput = new RegExp(`\\b${variableName}:\\s*${description.value}`);
-
-    console.log(regexCode.test(code), regexOutput.test(output));
+    const regexOutput = new RegExp(`.*\\s*${typeof description.value}`);
 
     return regexCode.test(code) && regexOutput.test(output);
+
 }

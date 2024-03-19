@@ -7,21 +7,32 @@ import Collapsible from "@/components/Collapsible.astro";
 ---
 
 <Layout
-    title="Variables y tipos de datos"
+    title="Variables y tipos de datos: tipos de datos"
     description="Un playground de JavaScript"
 >
     <main>
         <h1>Variables y tipos de datos</h1>
 
-        <h2>Variables</h2>
-        <p>
-            Una variable es un contenedor de información. Cada variable tiene un
-            nombre y un valor.
-        </p>
+        <h2>Tipos de datos</h2>
+        <p>Ya sabes que son las variables, es hora de adentrarnos en los tipos de datos.</p>
 
-        <p>
-            Nos sirvirá para almacenar valores que utilizaremos posteriormente.
-        </p>
+        <p>Los tipos de datos proporcionan una forma de clasificar y organizar la información lo que permite procesarlos y manipularlos de manera efectiva.</p>
+
+        <p>Los tipos de datos más comunes en JavaScript son:</p>
+
+        <ul>
+            <li>strings</li>
+            <li>numbers</li>
+            <li>booleans</li>
+            <li>null</li>
+            <li>undefined</li>
+            <li>objects</li>
+            <li>arrays</li>
+        </ul>
+
+        <p>Hasta el momento veníamos utilizando los strings o cadena de caracteres. Ej: "Pedro", "Juan"</p>
+
+        <p>Vamos a ver como podemos averiguar el tipo de dato que contiene una variable.</p>
 
         <QuickNote title="Nota" bgcolor="#f0f0f0">
             Presiona en el icono de "play" para ejecutar el código.
@@ -46,19 +57,17 @@ import Collapsible from "@/components/Collapsible.astro";
         </div>
 
         <Editor code=`let nombre = "Pedro";
-console.log('Nombre:', nombre);` />
+console.log("nombre es", typeof nombre);` />
     </main>
 </Layout>
 
 <script>
     import {
-        //@ts-ignore
         consoleIs,
-        //@ts-ignore
         definesVariable,
-        //@ts-ignore
         variablePrinted,
         definesAndReassignsVariable,
+        printsTypeof
     } from "@/scripts/goal-checker.mjs";
 
     const goals = [
@@ -68,25 +77,28 @@ console.log('Nombre:', nombre);` />
                 "Observa el siguiente ejemplo con atención y luego presiona en el icono de 'play' para ejecutar el código.",
             completed: false,
             successMessage:
-                "Hemos definido una variable 'nombre' con el valor 'Pedro' y esto lo imprimos por consola.",
-            test: () => consoleIs("Nombre: Pedro"),
+                "El operador typeof devuelve el tipo de dato de una variable.",
+            test: () => consoleIs("nombre es string"),
         },
         {
-            name: "Crear una nueva variable",
+            name: "Crear un variable de tipo numerico",
             description:
-                "Ahora te toca a vos, define una variable 'apellido' con el valor 'Torres' y muestra su valor en la consola.",
+                "Ahora te toca a vos, define una variable 'edad' con el valor 25 (sin comillas) y muestra su tipo en la consola.",
             completed: false,
             successMessage:
-                "Genial! Ahora ya sabes como crear variables y como utilizar su contenido.",
+                "Genial! Ahora sabemos que es de tipo number.",
             test: () => {
                 const expectedVariable = {
                     type: "let",
-                    name: "apellido",
-                    value: "\"Torres\"",
+                    name: "edad",
+                    value: 25,
                 };
+
+                console.log("edad es", typeof expectedVariable.value);
                 return (
                     definesVariable(expectedVariable) &&
-                    variablePrinted({...expectedVariable, value: "Torres"})
+                    // variablePrinted(expectedVariable)
+                    printsTypeof(expectedVariable)
                 );
             },
             clues: [
@@ -113,8 +125,14 @@ console.log('Nombre:', nombre);` />
 
                 const newExpectedValue = "\"Juan\"";
                 return (
-                    definesAndReassignsVariable(expectedVariable, newExpectedValue) &&
-                    variablePrinted({...expectedVariable, value: "Juan"})
+                    definesAndReassignsVariable(
+                        expectedVariable,
+                        newExpectedValue,
+                    ) &&
+                    variablePrinted({
+                        ...expectedVariable,
+                        value: newExpectedValue,
+                    })
                 );
             },
         },
