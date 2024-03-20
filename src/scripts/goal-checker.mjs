@@ -1,76 +1,101 @@
-const outputElement = document.querySelector(".console");
+import { a, build } from "./builder.mjs";
 
-if (!outputElement) {
-    throw new Error('No se encontro el elemento de consola');
-}
+class GoalChecker {
+    constructor({
+        goals = [],
+        codeEditor = null,
+        outputElement = null,
+        messageBox = null,
+        previousLesson = null,
+        nextLesson,
+    }) {
+        this.goals = goals;
+        this.currentGoal = 0;
+        this.codeEditor = codeEditor;
+        this.outputElement = outputElement;
+        this.messageBox = messageBox;
+        this.previousLesson = previousLesson;
+        this.nextLesson = nextLesson;
 
-export function consoleIs(codeFragment) {
-    return outputElement?.textContent?.trim() === codeFragment;
-}
+        this.observer = new MutationObserver(() => {
+            const cmContent = document.querySelector(".cm-content");
+            const messageBox = document.querySelector("#message-box");
 
-function getEditorContent() {
-    const cmContent = document.querySelector(".cm-content");
+            if (!cmContent) {
+                console.error("No se encontro el elemento 'cmContent'");
+                return;
+            }
 
-    if (!cmContent) {
-        throw new Error('No se encontro el elemento del editor');
+            if (!messageBox) {
+                console.error("No se encontro el elemento 'messageBox'");
+                return;
+            }
+
+            if (this.goals[this.currentGoal].test() && !this.goals[this.currentGoal].completed) {
+                this.goals[this.currentGoal].completed = true;
+
+                messageBox.className = "success";
+                messageBox.innerHTML = `
+                        ${build("p", this.goals[this.currentGoal].successMessage)}
+                        ${build("button", "Continuar", { id: "continue-btn" })}
+                    `;
+                this.configureContinueButton();
+            } else if (!this.goals[this.currentGoal].completed) {
+                messageBox.className = "warning";
+                messageBox.innerHTML = `
+                        ${build("b", "Tu respuesta no es correcta.")}
+                        ${build("p", this.goals[this.currentGoal].description)}
+                    `;
+                this.configureContinueButton();
+            }
+        });
+
     }
 
-    return cmContent;
-}
+    setGoal(index) {
+        this.currentGoal = index;
 
+        this.messageBox = this.messageBox || document.querySelector("#message-box");
 
-/**
- * Check if variable is defined
- * @param {Object} description
- * @param {string} description.type
- * @param {string} description.name
- * @param {string || number} description.value
- * @return {boolean}
- */
-export function definesVariable(description){
-    const code = getEditorContent().textContent;
-    const regex = new RegExp(`${description.type}\\s+${description.name}\\s*=\\s*${description.value ? `${description.value}` : '\\w+'}`);
-        return regex.test(code);
-}
+        if (this.messageBox) {
+            this.messageBox.textContent = this.goals[this.currentGoal].description;
+            this.messageBox.className = "info";
+        }
+    }
 
-export function definesAndReassignsVariable(description, newValue) {
-    const code = getEditorContent().textContent;
-    const regex = new RegExp(`${description.name}\\s*=\\s*${newValue ? `${newValue}` : '\\w+'}`);
-    return regex.test(code) && definesVariable(description);
-}
+    configureContinueButton() {
+        const continueBtn = document.querySelector("#continue-btn");
 
-export function variablePrinted(description) {
+        if (continueBtn) {
+            continueBtn.addEventListener("click", () => {
+                if (this.currentGoal < this.goals.length - 1) {
+                    this.setGoal(this.currentGoal + 1);
+                } else {
+                    this.finishLesson(this.nextLesson.link);
+                }
+            });
+        }
+    }
 
-    console.log("vprint: ", description)
+    finishLesson = (nextLessonLink) => {
+        const successMessage = document.querySelector("#message-box");
+        if (successMessage) {
+            successMessage.innerHTML = `
+                ${build("p", "¡Felicidades! Has completado el tutorial.")}
+                ${nextLessonLink ? a("Siguiente tutorial", nextLessonLink) : ""}`;
+        }
+    }
 
-    const output = outputElement.textContent;
-    const code = getEditorContent().textContent;
-    
-    const regexCode = new RegExp(`console\\.log\\(.*\\s*${description.name}\\s*\\)`);
+    run() {
+        this.setGoal(0);
 
-    const regexOutput = new RegExp(`.*\\s*${description.value}`);
-
-    return regexCode.test(code) && regexOutput.test(output);
-}
-
-export function printsTypeof(description) {
-    const output = outputElement.textContent;
-    const code = getEditorContent().textContent;
-
-    console.log({
-        output,
-        code,
-        regexCode: new RegExp(`console\\.log\\(.*\\s*typeof\\s*${description.name}\\s*\\)`),
-        regexOutput: new RegExp(`.*\\s*${typeof description.value}`),
-        test: new RegExp(`console\\.log\\(.*\\s*typeof\\s*${description.name}\\s*\\)`).test(code) && new RegExp(`.*\\s*${typeof description.value}`).test(output),
-        type: typeof description.value,
-        name: description.name
-    })
-    
-    const regexCode = new RegExp(`console\\.log\\(.*\\s*typeof\\s*${description.name}\\s*\\)`);
-
-    const regexOutput = new RegExp(`.*\\s*${typeof description.value}`);
-
-    return regexCode.test(code) && regexOutput.test(output);
+        if (this.outputElement) {
+            this.observer.observe(this.outputElement, { childList: true, subtree: true });
+        } else {
+            console.error("No se encontro el elemento 'outputElement'");
+        }
+    }
 
 }
+
+export default GoalChecker;

@@ -1,9 +1,8 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import Editor from "@/components/Editor.astro";
-import QuickNote from "@/components/QuickNote.astro";
 
-import Collapsible from "@/components/Collapsible.astro";
+import "@/styles/message-box.css";
 ---
 
 <Layout
@@ -47,33 +46,7 @@ import Collapsible from "@/components/Collapsible.astro";
             variable.
         </p>
 
-        <QuickNote title="Nota" bgcolor="#f0f0f0">
-            Presiona en el icono de "play" para ejecutar el código.
-        </QuickNote>
-
-        <div id="goal">
-            <QuickNote title="Objetivo" bgcolor="#A6FF96">
-                <div id="goal-description"></div>
-                <div id="clues-box">
-                    <Collapsible title="Dame una pista">
-                        <div id="goal-clues"></div>
-                    </Collapsible>
-                </div>
-            </QuickNote>
-        </div>
-
-        <div id="success-message-box">
-            <QuickNote title="Objetivo Alcanzado" bgcolor="#6499E9">
-                <div id="success-message"></div>
-                <button id="continue-btn">Continuar</button>
-            </QuickNote>
-        </div>
-
-        <div id="finish-lesson">
-            <QuickNote title="Lección completada" bgcolor="green">
-                <div id="finish-message"></div>
-            </QuickNote>
-        </div>
+        <div id="message-box"></div>
 
         <Editor
             code=`let nombre = "Pedro";
@@ -83,198 +56,23 @@ console.log("nombre es", typeof nombre);`
 </Layout>
 
 <script>
-    import {
-        consoleIs,
-        definesVariable,
-        printsTypeof,
-    } from "@/scripts/goal-checker.mjs";
+    import GoalChecker from "@/scripts/goal-checker.mjs";
+    import goals from "@/scripts/lessons/tipos-de-datos-goals-2.mjs";
 
-    import { a, p } from "@/scripts/builder.mjs";
-
-    const goals = [
-        {
-            name: "Definir una variable",
-            description:
-                "Observa el siguiente ejemplo con atención y luego presiona en el icono de 'play' para ejecutar el código.",
-            completed: false,
-            successMessage:
-                "El operador typeof devuelve el tipo de dato de una variable.",
-            test: () => consoleIs("nombre es string"),
-        },
-        {
-            name: "Crear un variable de tipo numerico",
-            description:
-                "Ahora te toca a vos, define una variable 'edad' con el valor 25 (sin comillas) y muestra su tipo en la consola.",
-            completed: false,
-            successMessage: "Genial! Ahora sabemos que es de tipo number.",
-            test: () => {
-                const expectedVariable = {
-                    type: "let",
-                    name: "edad",
-                    value: 25,
-                };
-                return (
-                    definesVariable(expectedVariable) &&
-                    printsTypeof(expectedVariable)
-                );
-            },
-            clues: [
-                "Para definir una variable usamos la palabra 'let' seguido del nombre de la variable",
-                "Para asignar el valor utilizamos el operador '=' (asignación) seguido del valor",
-                "Para leer el valor simplemente escribimos el nombre de la variable",
-                "Ten en cuenta las mayúsculas y minúsculas",
-                "Usa el formato del ejemplo",
-            ],
-        },
-        {
-            name: "Prueba otra vez, con un número decimal",
-            description: `Crea otra variable 'altura' con el valor 1.75 (sin comillas) y muestra su tipo en la consola.`,
-            completed: false,
-            successMessage:
-                "¡Muy bien! Hemos aprendido como mostrar el tipo de dato de una variable.",
-            test: () => {
-                const expectedVariable = {
-                    type: "let",
-                    name: "altura",
-                    value: 1.75,
-                };
-                return (
-                    definesVariable(expectedVariable) &&
-                    printsTypeof(expectedVariable)
-                );
-            },
-        },
-    ];
-
-    let currentGoal = 0;
-
+    const nextLessonLink = "/variables-y-tipos-de-datos/operaciones";
     const outputElement = document.querySelector(".console");
 
-    const setGoal = (index: number) => {
-        currentGoal = index;
+    const config = {
+        goals: goals,
+        nextLesson: {
+            name: "Tipos de datos",
+            link: nextLessonLink,
+        },
 
-        const goalDescription = document.querySelector("#goal-description");
-
-        if (goalDescription) {
-            goalDescription.textContent = goals[currentGoal].description;
-        }
-
-        const goalClues = document.querySelector("#goal-clues");
-
-        if (goalClues) {
-            goalClues.innerHTML = "";
-
-            if (goals[currentGoal].clues) {
-                if (Array.isArray(goals[currentGoal].clues)) {
-                    // @ts-ignore
-                    goals[currentGoal].clues.forEach((clue) => {
-                        const li = document.createElement("li");
-                        li.textContent = clue;
-                        goalClues.appendChild(li);
-                    });
-
-                    const cluesBox = document.querySelector("#clues-box");
-                    if (cluesBox && cluesBox.classList.contains("hidden")) {
-                        cluesBox.classList.remove("hidden");
-                    }
-                }
-            } else {
-                const cluesBox = document.querySelector("#clues-box");
-                if (cluesBox && !cluesBox.classList.contains("hidden")) {
-                    cluesBox.classList.add("hidden");
-                }
-            }
-        }
-
-        const successMessage = document.querySelector("#success-message");
-        if (successMessage) {
-            successMessage.innerHTML = goals[currentGoal].successMessage;
-        }
-
-        const successMessageBox = document.querySelector(
-            "#success-message-box",
-        );
-        if (successMessageBox && successMessageBox.classList.contains("show")) {
-            successMessageBox.classList.remove("show");
-        }
+        outputElement: outputElement,
     };
 
-    const finishLesson = () => {
-        const finishLesson = document.querySelector("#finish-message");
-        if (finishLesson) {
-            finishLesson.innerHTML =
-                `${p("¡Felicidades! Has completado el tutorial.")}
-                ${a("Siguiente tutorial", "/variables-y-tipos-de-datos/operaciones")}`;
-        }
-    };
-
-    const observer = new MutationObserver(() => {
-        const cmContent = document.querySelector(".cm-content");
-
-        if (!cmContent) {
-            console.error("No se encontro el elemento 'cmContent'");
-            return;
-        }
-
-        if (goals[currentGoal].test()) {
-            goals[currentGoal].completed = true;
-
-            const successMessageBox = document.querySelector(
-                "#success-message-box",
-            );
-
-            if (successMessageBox) {
-                successMessageBox.classList.add("show");
-            }
-        }
-    });
-
-    function configureContinueButton() {
-        const continueBtn = document.querySelector("#continue-btn");
-
-        if (continueBtn) {
-            continueBtn.addEventListener("click", () => {
-                if (currentGoal < goals.length - 1) {
-                    setGoal(currentGoal + 1);
-                } else {
-                    finishLesson();
-                }
-            });
-        }
-    }
-
-    configureContinueButton();
-
-    // First goal
-    setGoal(0);
-
-    if (outputElement) {
-        observer.observe(outputElement, { childList: true, subtree: true });
-    } else {
-        console.error("No se encontro el elemento 'outputElement'");
-    }
+    // @ts-ignore
+    const goalChecker = new GoalChecker(config);
+    goalChecker.run();
 </script>
-
-<style>
-    .hidden {
-        display: none;
-    }
-
-    mark {
-        background-color: #f0f0f0;
-        padding: 0 2px;
-    }
-</style>
-
-<style is:inline>
-    #success-message-box {
-        display: none;
-    }
-    .show {
-        display: block !important;
-    }
-
-    #finish-lesson {
-        display: none;
-    }
-</style>

@@ -1,9 +1,8 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import Editor from "@/components/Editor.astro";
-import QuickNote from "@/components/QuickNote.astro";
 
-import Collapsible from "@/components/Collapsible.astro";
+import "@/styles/message-box.css";
 ---
 
 <Layout
@@ -23,27 +22,14 @@ import Collapsible from "@/components/Collapsible.astro";
             Nos sirvirá para almacenar valores que utilizaremos posteriormente.
         </p>
 
-        <QuickNote title="Nota" bgcolor="#f0f0f0">
-            Presiona en el icono de "play" para ejecutar el código.
-        </QuickNote>
+        <p>También podemos cambiar su valor.</p>
 
-        <div id="goal">
-            <QuickNote title="Objetivo" bgcolor="#A6FF96">
-                <div id="goal-description"></div>
-                <div id="clues-box">
-                    <Collapsible title="Dame una pista">
-                        <div id="goal-clues"></div>
-                    </Collapsible>
-                </div>
-            </QuickNote>
-        </div>
+        <p>
+            Para definir una variable, usamos la palabra 'let' seguido del
+            nombre seguido de su valor inicial.
+        </p>
 
-        <div id="success-message-box">
-            <QuickNote title="Objetivos concluidos" bgcolor="#6499E9">
-                <div id="success-message"></div>
-                <button id="continue-btn">Continuar</button>
-            </QuickNote>
-        </div>
+        <div id="message-box"></div>
 
         <Editor code=`let nombre = "Pedro";
 console.log('Nombre:', nombre);` />
@@ -51,199 +37,25 @@ console.log('Nombre:', nombre);` />
 </Layout>
 
 <script>
-    import {
-        //@ts-ignore
-        consoleIs,
-        //@ts-ignore
-        definesVariable,
-        //@ts-ignore
-        variablePrinted,
-        definesAndReassignsVariable,
-    } from "@/scripts/goal-checker.mjs";
+    import GoalChecker from "@/scripts/goal-checker.mjs";
 
-    const goals = [
-        {
-            name: "Definir una variable",
-            description:
-                "Observa el siguiente ejemplo con atención y luego presiona en el icono de 'play' para ejecutar el código.",
-            completed: false,
-            successMessage:
-                "Hemos definido una variable 'nombre' con el valor 'Pedro' y esto lo imprimos por consola.",
-            test: () => consoleIs("Nombre: Pedro"),
-        },
-        {
-            name: "Crear una nueva variable",
-            description:
-                "Ahora te toca a vos, define una variable 'apellido' con el valor 'Torres' y muestra su valor en la consola.",
-            completed: false,
-            successMessage:
-                "Genial! Ahora ya sabes como crear variables y como utilizar su contenido.",
-            test: () => {
-                const expectedVariable = {
-                    type: "let",
-                    name: "apellido",
-                    value: "\"Torres\"",
-                };
-                return (
-                    definesVariable(expectedVariable) &&
-                    variablePrinted({...expectedVariable, value: "Torres"})
-                );
-            },
-            clues: [
-                "Para definir una variable usamos la palabra 'let' seguido del nombre de la variable",
-                "Para asignar el valor utilizamos el operador '=' (asignación) seguido del valor",
-                "Para leer el valor simplemente escribimos el nombre de la variable",
-                "Ten en cuenta las mayúsculas y minúsculas",
-                "Usa el formato del ejemplo",
-            ],
-        },
-        {
-            name: "Modificar el valor de una variable",
-            description: `Modifica el valor de la variable 'nombre' para que sea 'Juan'.\n
-                Debajo del código existente, escribe nombre = 'Juan' y vuelve a mostrar el valor de la variable en la consola.`,
-            completed: false,
-            successMessage:
-                "Genial! Ahora ya sabes como modificar el valor de una variable.",
-            test: () => {
-                const expectedVariable = {
-                    type: "let",
-                    name: "nombre",
-                    value: "\"Pedro\"",
-                };
+    import goals from "@/scripts/lessons/variables-goals-1.mjs";
 
-                const newExpectedValue = "\"Juan\"";
-                return (
-                    definesAndReassignsVariable(expectedVariable, newExpectedValue) &&
-                    variablePrinted({...expectedVariable, value: "Juan"})
-                );
-            },
-        },
-    ];
-
-    let currentGoal = 0;
+    const nextLessonLink = "/variables-y-tipos-de-datos/tipos-de-datos";
 
     const outputElement = document.querySelector(".console");
 
-    const setGoal = (index: number) => {
-        currentGoal = index;
+    const config = {
+        goals: goals,
+        nextLesson: {
+            name: "Tipos de datos",
+            link: nextLessonLink,
+        },
 
-        const goalDescription = document.querySelector("#goal-description");
-
-        if (goalDescription) {
-            goalDescription.textContent = goals[currentGoal].description;
-        }
-
-        const goalClues = document.querySelector("#goal-clues");
-
-        if (goalClues) {
-            goalClues.innerHTML = "";
-
-            if (goals[currentGoal].clues) {
-                if (Array.isArray(goals[currentGoal].clues)) {
-                    // @ts-ignore
-                    goals[currentGoal].clues.forEach((clue) => {
-                        const li = document.createElement("li");
-                        li.textContent = clue;
-                        goalClues.appendChild(li);
-                    });
-
-                    const cluesBox = document.querySelector("#clues-box");
-                    if (cluesBox && cluesBox.classList.contains("hidden")) {
-                        cluesBox.classList.remove("hidden");
-                    }
-                }
-            } else {
-                const cluesBox = document.querySelector("#clues-box");
-                if (cluesBox && !cluesBox.classList.contains("hidden")) {
-                    cluesBox.classList.add("hidden");
-                }
-            }
-        }
-
-        const successMessage = document.querySelector("#success-message");
-        if (successMessage) {
-            successMessage.innerHTML = goals[currentGoal].successMessage;
-        }
-
-        const successMessageBox = document.querySelector(
-            "#success-message-box",
-        );
-        if (successMessageBox && successMessageBox.classList.contains("show")) {
-            successMessageBox.classList.remove("show");
-        }
+        outputElement: outputElement,
     };
 
-    const finishLesson = () => {
-        const successMessage = document.querySelector("#success-message");
-        if (successMessage) {
-            successMessage.innerHTML =
-                "¡Felicidades! Has completado el tutorial.";
-        }
-    };
-
-    const observer = new MutationObserver(() => {
-        const cmContent = document.querySelector(".cm-content");
-
-        if (!cmContent) {
-            console.error("No se encontro el elemento 'cmContent'");
-            return;
-        }
-
-        if (goals[currentGoal].test()) {
-            goals[currentGoal].completed = true;
-
-            const successMessageBox = document.querySelector(
-                "#success-message-box",
-            );
-
-            if (successMessageBox) {
-                successMessageBox.classList.add("show");
-            }
-        }
-    });
-
-    function configureContinueButton() {
-        const continueBtn = document.querySelector("#continue-btn");
-
-        if (continueBtn) {
-            continueBtn.addEventListener("click", () => {
-                if (currentGoal < goals.length - 1) {
-                    setGoal(currentGoal + 1);
-                } else {
-                    finishLesson();
-                }
-            });
-        }
-    }
-
-    configureContinueButton();
-
-    // First goal
-    setGoal(0);
-
-    if (outputElement) {
-        observer.observe(outputElement, { childList: true, subtree: true });
-    } else {
-        console.error("No se encontro el elemento 'outputElement'");
-    }
+    // @ts-ignore
+    const goalChecker = new GoalChecker(config);
+    goalChecker.run();
 </script>
-
-<style>
-    .hidden {
-        display: none;
-    }
-
-    mark {
-        background-color: #f0f0f0;
-        padding: 0 2px;
-    }
-</style>
-
-<style is:inline>
-    #success-message-box {
-        display: none;
-    }
-    .show {
-        display: block !important;
-    }
-</style>
